@@ -1,0 +1,38 @@
+name: CI - Verificación de Pull Requests
+
+on:
+  pull_request:
+    branches: [ main, develop, dev ]
+
+jobs:
+  verify-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar código del repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configurar caché de NPM
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Validar código (Linter)
+        run: npm run lint
+
+      - name: Validar compilación (Build)
+        run: npm run build
+        env:
+          NEXT_PUBLIC_EMPLEATE_COLON_API_URL: "https://localhost:5000" 
+          NODE_ENV: production
