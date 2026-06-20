@@ -102,6 +102,7 @@ export default function VacanciesGestorPage() {
                 gender: item.Vacancy.gender || "No especificado|error",
 
                 ageRange: formattedAgeRange,
+                checkedAt: item.Vacancy.checkedAt,
 
                 AdditionalInformation: item.Vacancy.additionalInformation || "No especificado|error",
                 RequiredExperience: item.Vacancy.experience || "No especificado|error",

@@ -6,12 +6,15 @@ interface CompanyAuthState {
   companyId: string | null;
   email: string | null;
   status: string | null;
+  statusCompany: string | null;
 
   login: (data: {
     companyId?: string;
     id?: string;
     email: string;
     status: string;
+    statusCompany: string;
+
     token: string;
   }) => void;
 
@@ -37,14 +40,23 @@ export const useCompanyStore = create<CompanyAuthState>((set) => ({
   companyId: null,
   email: null,
   status: null,
+  statusCompany: null,
 
-  login: ({ companyId, id, email, status, token }) => {
+  login: ({
+    companyId,
+    id,
+    email,
+    status,
+    statusCompany,
+    token,
+  }) => {
     const finalCompanyId = companyId ?? id ?? null;
 
     set({
       companyId: finalCompanyId,
       email,
       status,
+      statusCompany,
       token,
     });
 
@@ -59,6 +71,7 @@ export const useCompanyStore = create<CompanyAuthState>((set) => ({
 
       localStorage.setItem(LOCAL_STORAGE_EMAIL_KEY, email);
       localStorage.setItem(LOCAL_STORAGE_STATUS_KEY, status);
+      localStorage.setItem('statusCompany', statusCompany);
     }
   },
 
@@ -68,6 +81,7 @@ export const useCompanyStore = create<CompanyAuthState>((set) => ({
       companyId: null,
       email: null,
       status: null,
+      statusCompany: null,
     });
 
     if (typeof window !== 'undefined') {
@@ -76,6 +90,7 @@ export const useCompanyStore = create<CompanyAuthState>((set) => ({
         localStorage.removeItem(LOCAL_STORAGE_COMPANY_ID_KEY);
         localStorage.removeItem(LOCAL_STORAGE_EMAIL_KEY);
         localStorage.removeItem(LOCAL_STORAGE_STATUS_KEY);
+        localStorage.removeItem('statusCompany');
       } catch {}
     }
   },
@@ -86,6 +101,7 @@ export const useCompanyStore = create<CompanyAuthState>((set) => ({
       companyId: null,
       email: null,
       status: null,
+      statusCompany: null,
     });
 
     if (typeof window !== 'undefined') {
@@ -94,6 +110,7 @@ export const useCompanyStore = create<CompanyAuthState>((set) => ({
         localStorage.removeItem(LOCAL_STORAGE_COMPANY_ID_KEY);
         localStorage.removeItem(LOCAL_STORAGE_EMAIL_KEY);
         localStorage.removeItem(LOCAL_STORAGE_STATUS_KEY);
+        localStorage.removeItem('statusCompany');
       } catch {}
     }
   },
@@ -105,6 +122,7 @@ export const useCompanyStore = create<CompanyAuthState>((set) => ({
     const companyId = localStorage.getItem(LOCAL_STORAGE_COMPANY_ID_KEY);
     const email = localStorage.getItem(LOCAL_STORAGE_EMAIL_KEY);
     const status = localStorage.getItem(LOCAL_STORAGE_STATUS_KEY);
+    const statusCompany = localStorage.getItem('statusCompany');
 
     if (token && companyId) {
       set({
@@ -112,6 +130,7 @@ export const useCompanyStore = create<CompanyAuthState>((set) => ({
         companyId,
         email: email ?? null,
         status: status ?? null,
+        statusCompany: statusCompany ?? null,
       });
     } else {
       set({
@@ -119,6 +138,7 @@ export const useCompanyStore = create<CompanyAuthState>((set) => ({
         companyId: null,
         email: null,
         status: null,
+        statusCompany: null,
       });
 
       try {
@@ -126,12 +146,18 @@ export const useCompanyStore = create<CompanyAuthState>((set) => ({
         localStorage.removeItem(LOCAL_STORAGE_COMPANY_ID_KEY);
         localStorage.removeItem(LOCAL_STORAGE_EMAIL_KEY);
         localStorage.removeItem(LOCAL_STORAGE_STATUS_KEY);
+        localStorage.removeItem('statusCompany');
       } catch {}
     }
   },
 
   saveCompanyData: ({ companyId, email, status, token }) => {
-    set({ companyId, email, status, token });
+    set({
+      companyId,
+      email,
+      status,
+      token,
+    });
 
     if (typeof window !== 'undefined') {
       localStorage.setItem(LOCAL_STORAGE_TOKEN_KEY, token);

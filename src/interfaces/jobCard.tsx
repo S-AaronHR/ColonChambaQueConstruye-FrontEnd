@@ -18,6 +18,7 @@ export interface BackendVacancyItem {
     workShift: string;
     modality: string;
     createdAt: string;
+    checkedAt: string;
     status: string; 
     companyStatus: string;
     additionalInformation?: string;
@@ -54,7 +55,7 @@ export interface CompanyDetails {
 export interface JobCardProps {
   id: string;
   status: VacancyStatus;
-  comment?: string; // <-- AGREGADO
+  comment?: string; 
   title: string;
   company: string;
   location: string;
@@ -64,6 +65,7 @@ export interface JobCardProps {
   modality: string;
   logoUrl?: string;
   createdAt: string;
+  checkedAt: string;
   sector: string;
   numberOfPositions: number;
   BenefitsSection: string;
@@ -96,6 +98,7 @@ export const mapBackendVacancyToJobCard = (item: BackendVacancyItem): JobCardPro
     schedule: v.workShift || 'TIEMPO_COMPLETO',
     modality: v.modality || 'PRESENCIAL',
     createdAt: v.createdAt,
+    checkedAt: v.checkedAt,
     sector: v.businessSector || 'No especificado',
     numberOfPositions: v.numberOpenings || 1,
     BenefitsSection: v.benefits || '',

@@ -72,6 +72,9 @@ export default function UserLinkerVacanciesCard({
                 <Gps className="h-4 w-4" weight="Linear" />
                 <span>{job.modality}</span>
               </div>
+              <div className="flex items-center gap-2 text-sm text-gray-700 transition-colors duration-200 group-hover:text-gray-900">
+                <span>{new Date(job.createdAt).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+              </div>
             </div>
           </div>
 
@@ -222,6 +225,15 @@ export default function UserLinkerVacanciesCard({
                     <h3 className="text-base font-medium w-full sm:w-1/3 shrink-0 text-gray-900">Datos adicionales</h3>
                     <div className="w-full sm:w-2/3 min-w-0 break-words text-gray-700">
                       <p className="whitespace-pre-wrap">{job.AdditionalInformation}</p>
+                    </div>
+                  </div>
+
+                  {/* Fecha de revision */}
+                  <div className="px-6 sm:px-10 py-6 flex flex-col sm:flex-row justify-between gap-2 sm:gap-4">
+                    <h3 className="text-base font-medium w-full sm:w-1/3 shrink-0 text-gray-900">Fecha de revision</h3>
+                    <div className="w-full sm:w-2/3 min-w-0 break-words text-gray-700">
+                      <span>{new Date(job.checkedAt).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' })}</span>
+                           
                     </div>
                   </div>
 

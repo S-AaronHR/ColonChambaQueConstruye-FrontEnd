@@ -6,14 +6,16 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import { useRouter } from 'next/navigation';
 
 import EmployerSideBar from '@/components/sidebar/EmployerSideBar';
 import Header from '@/components/ui/header';
 import EmployerTab from '@/components/employer/EmployerTab';
 import { apiService } from '@/services/api.service';
+import { useCompanyStore } from '@/app/store/authCompanyStore';
+import RequestReviewButton from '@/components/common/RequestReviewButton';
 
-
-//Tipado de respuesta al endpont
+// Tipado de respuesta al endpoint
 type Company = {
   id: string;
   tradeName: string;
@@ -60,24 +62,32 @@ type EmployerProfileContextType = {
   error: string | null;
 };
 
-
-
 const EmployerProfileContext =
   createContext<EmployerProfileContextType | undefined>(undefined);
 
 export function useEmployerProfile() {
   const ctx = useContext(EmployerProfileContext);
+
   if (!ctx) {
     throw new Error(
       'useEmployerProfile debe usarse dentro de LayoutEmployerView',
     );
   }
+
   return ctx;
 }
 
+export default function LayoutEmployerView({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const router = useRouter();
 
-
-export default function LayoutEmployerView({children,}: Readonly<{ children: React.ReactNode }>) {
+  const {
+    statusCompany,
+    companyId,
+    token,
+    logoutCompany,
+  } = useCompanyStore();
 
   const [company, setCompany] = useState<Company | null>(null);
   const [companyAccount, setCompanyAccount] =
@@ -91,17 +101,15 @@ export default function LayoutEmployerView({children,}: Readonly<{ children: Rea
         setLoading(true);
         setError(null);
 
-        
-        const companyId = localStorage.getItem('companyId');
+        const storedCompanyId = localStorage.getItem('companyId');
 
-        if (!companyId) {
+        if (!storedCompanyId) {
           setError('No se encontró companyId en localStorage');
           setLoading(false);
           return;
         }
 
-       
-        const res = await apiService.get(`/companies/${companyId}`,);
+        const res = await apiService.get(`/companies/${storedCompanyId}`);
 
         if (!res) {
           setError('No hubo respuesta del servidor');
@@ -119,8 +127,6 @@ export default function LayoutEmployerView({children,}: Readonly<{ children: Rea
 
         setCompany(json.data.Company);
         setCompanyAccount(json.data.CompanyAccount);
-        console.log(json)
-
       } catch (err) {
         console.error('Error cargando perfil de empresa', err);
         setError('No se pudo cargar la información de la empresa');
@@ -132,28 +138,76 @@ export default function LayoutEmployerView({children,}: Readonly<{ children: Rea
     fetchProfile();
   }, []);
 
+  const finalCompanyStatus = (
+    company?.status ||
+    statusCompany ||
+    ''
+  ).toUpperCase();
+
+  const isRejected = finalCompanyStatus === 'RECHAZADA';
+
+  const reviewCompanyId = company?.id || companyId || '';
+  const reviewEndpoint = `/api/v1/companies/${reviewCompanyId}/status`;
+
   return (
     <EmployerProfileContext.Provider
       value={{ company, companyAccount, loading, error }}
     >
       <div className="min-h-screen bg-gray-50">
-        {/* Fixed Header */}
         <header className="fixed top-0 left-0 right-0 z-50 h-16 border-b bg-white shadow-sm">
-          <Header showProfileButton={false} companyTitle={company?.tradeName || 'Empresa'}/>
+          <Header
+            showProfileButton={false}
+            companyTitle={company?.tradeName || 'Empresa'}
+          />
         </header>
 
-        {/* Main layout with padding for fixed header */}
         <main className="flex pt-16">
-          {/* Sidebar */}
-          <div className="shrink-0 sticky top-16 h-[calc(100vh-4rem)]">
-            <EmployerSideBar />
-          </div>
+          {!isRejected && (
+            <div className="shrink-0 sticky top-16 h-[calc(100vh-4rem)]">
+              <EmployerSideBar />
+            </div>
+          )}
 
           <div className="w-120 py-12 shrink-0">
             <EmployerTab />
+
+            {isRejected && (
+              <div className="mt-8 px-4">
+                <div className="mb-4">
+                  {reviewCompanyId && token && (
+                    <RequestReviewButton
+                      endpoint={reviewEndpoint}
+                      token={token}
+                      onSuccess={() => {
+                        logoutCompany();
+                        router.replace('/login/waiting');
+                      }}
+                    />
+                  )}
+
+                  <p className="text-xs text-center text-gray-500 mt-2">
+                    Asegúrate de haber corregido los datos indicados antes de volver a enviar tu perfil.
+                  </p>
+                </div>
+
+                <div className="bg-red-50 shadow-sm border border-red-200 rounded-lg overflow-hidden">
+                  <div className="px-6 py-6 flex flex-col items-start gap-3">
+                    <h3 className="text-base font-bold text-red-700 shrink-0">
+                      Motivo de rechazo
+                    </h3>
+
+                    <div className="w-full min-w-0">
+                      <p className="text-red-800 font-medium whitespace-pre-wrap break-words leading-relaxed text-sm sm:text-base">
+                        {company?.comment ||
+                          'El administrador no especificó un motivo en el sistema.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-          
-          {/* Scrollable content */}
+
           <div className="flex-1 overflow-y-auto py-10 px-6">
             {children}
           </div>

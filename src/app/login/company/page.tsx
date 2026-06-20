@@ -54,7 +54,7 @@ export default function PublicLogin() {
       const token = accountData.token;
       const accountId = accountData.id;
       const accountStatus = String(accountData.status).toUpperCase();
-      
+
       const companyId = accountData.Company.id;
       const companyStatus = String(accountData.Company.status).toUpperCase();
 
@@ -62,49 +62,39 @@ export default function PublicLogin() {
       console.log('COMPANY ID:', companyId, '| STATUS:', companyStatus);
 
       if (!token || !companyId) {
-        throw new Error('Error: Faltan el token o el ID de la empresa en la respuesta del servidor.');
+        throw new Error(
+          'Error: Faltan el token o el ID de la empresa en la respuesta del servidor.'
+        );
       }
 
-      if (companyStatus === 'RECHAZADA' || 
-          accountStatus === 'RECHAZADA' ) {
-        
-        login({
-          token: token,
-          companyId: companyId,
-          email: normalizedEmail, 
-          status: companyStatus === 'RECHAZADA'  ? companyStatus : accountStatus,
-        });
+      login({
+        token,
+        companyId,
+        email: normalizedEmail,
+        status: accountStatus,
+        statusCompany: companyStatus,
+      });
 
-        toast.error('Tu empresa fue rechazada. Por favor revisa y actualiza tu información.');
-        router.push('/employer/profileconfig');
-        return;
-      }
-
-      const isAccountActive = accountStatus === 'ACTIVA' 
-      if (isAccountActive) {
-        if (accountData.token && companyId) {
-          login({
-            token: accountData.token,
-            companyId,
-            email: normalizedEmail,
-            status: accountStatus,
-          });
-
+      if (companyStatus === 'ACTIVA') {
         toast.success('Inicio de sesión exitoso');
+
         router.push('/employer/home/vacancies');
         return;
       }
 
-      console.warn('Cuenta en revisión o inactiva. No se guardó la sesión completa.');
-      
-      if (companyStatus == 'REVISION')
-        toast.info('Tu cuenta está en revisión. Te notificaremos cuando sea aprobada.');
-      } else {
-        toast.warning('Tu cuenta no se encuentra activa en este momento.');
+      if (companyStatus === 'RECHAZADA') {
+        toast.warning(
+          'Tu empresa fue rechazada. Debes completar o corregir tu perfil.'
+        );
+
+        router.push('/employer/profileconfig');
+        return;
       }
 
+      toast.info('Tu empresa está en revisión.');
+
       router.push('/login/waiting');
-      
+
     } catch (error: any) {
       console.error('Error en login:', error?.message);
 
@@ -213,7 +203,10 @@ export default function PublicLogin() {
                 <div className="flex items-center justify-between">
                   <p className="flex items-center gap-1 text-sm font-bold">
                     ¿No tienes cuenta?
-                    <Link href="/signup/employer" className="font-bold no-underline text-[#FF7F40]">
+                    <Link
+                      href="/signup/employer"
+                      className="font-bold no-underline text-[#FF7F40]"
+                    >
                       Regístrate
                     </Link>
                   </p>
